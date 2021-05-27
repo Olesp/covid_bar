@@ -5,7 +5,7 @@
 # Metadata allows your plugin to show up in the app, and website.
 #
 #  <xbar.title>Covid numbers</xbar.title>
-#  <xbar.version>v0.2.0</xbar.version>
+#  <xbar.version>v0.3.0</xbar.version>
 #  <xbar.author>Olvier Lespagnon</xbar.author>
 #  <xbar.author.github>olesp</xbar.author.github>
 #  <xbar.desc>Display covid states from the country you choose.</xbar.desc>
@@ -15,32 +15,30 @@
 # Variables become preferences in the app:
 #
 #  <xbar.var>string(VAR_COUNTRY="France"): The country from where the data will be retrieved.</xbar.var>
-# Get your API key at https://rapidapi.com/Gramzivi/api/covid-19-data
-#  <xbar.var>string(VAR_APIKEY="YOUR-API-KEY"): Your api key from rapidapi.com.</xbar.var>
 
 import requests
 import os
 import json
 import csv
+import pycountry
 
 from requests.api import request
 
-def get_cases(country:str, key:str)->str:
+def get_cases(country:str, key:str)->json:
     """
     Get the cases numbers as json string
     """
-    url = "https://covid-19-data.p.rapidapi.com/country"
-    querystring = {"name":country}
+    country_code = pycountry.countries.search_fuzzy(country)[0].alpha_3
 
-    headers = {
-        'x-rapidapi-key': key,
-        'x-rapidapi-host': "covid-19-data.p.rapidapi.com"
-        }
+    response = requests.get("https://raw.githubusercontent.com/owid/covid-19-data/master/public/data/latest/owid-covid-latest.json").json()[country_code]
 
-    response = requests.get(url, headers=headers, params=querystring).json()
-    response = response[0]
+    country_cases = {}
+    country_cases["confirmed"] = int(response["total_cases"])
+    country_cases["deaths"] = int(response["total_deaths"])
+    country_cases["daily_deaths"] = int(response["new_deaths"])
+    country_cases["daily_cases"] = int(response["new_cases"])
 
-    return response
+    return country_cases
 
 def get_vaccinces(country:str):
     """
@@ -63,14 +61,13 @@ def display(country:str, cases, vaccines):
     print("🦠")
     print("---")
     print("😷Cases")
-    print("--Total cases in {country} : {cases:,} | color=white".format(cases=cases["confirmed"], country=country))
-    print("--Deaths in {country} : {morts:,} | color=red".format(morts=cases["deaths"], country=country))
-    print("--Recovered in {country} : {recovered:,} | color=green".format(recovered=cases["recovered"], country=country))
+    print("Total cases in {country} : {cases:,} (+{daily_cases})| color=white".format(cases=cases["confirmed"], country=country, daily_cases=cases["daily_cases"]))
+    print("Deaths in {country} : {morts:,} (+{daily_deaths}) | color=red".format(morts=cases["deaths"], country=country, daily_deaths=cases["daily_deaths"]))
     print("---")
     print("💉Vaccines")
-    print("--Total vaccinated in {country} : {total_vacc:,} | color=white".format(country=country, total_vacc=int(vaccines["total_vaccinations"])))
-    print("--One dose recieved : {partial:,} | color=yellow".format(country=country, partial=int(vaccines["people_vaccinated"])))
-    print("--Two dose recieved : {full:,} | color=green".format(country=country, full=int(vaccines["people_fully_vaccinated"])))
+    print("Total vaccinated in {country} : {total_vacc:,} | color=white".format(country=country, total_vacc=int(vaccines["total_vaccinations"])))
+    print("One dose recieved : {partial:,} | color=yellow".format(country=country, partial=int(vaccines["people_vaccinated"])))
+    print("Two dose recieved : {full:,} | color=green".format(country=country, full=int(vaccines["people_fully_vaccinated"])))
 
 def main():
     key = os.environ["VAR_APIKEY"]
@@ -81,6 +78,6 @@ def main():
 
     display(country,cases,vaccines)
 
-
+main()
 
 

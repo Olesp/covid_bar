@@ -29,10 +29,10 @@
 
 Sample:
 
+* Install the [pycountry](https://pypi.org/project/pycountry/), [requests](https://pypi.org/project/requests/) modules
 * Install the xbar app from this [link](https://github.com/matryer/xbar)
 * Download the covid_daily.60m.py file and place it into the xbar plugins folder
-* Get your api key from the [rapidapi website](https://rapidapi.com/Gramzivi/api/covid-19-data)
-* Place the api key into the xvar field
+* Modify the shebang to reference your python path
 * Write the country name of your choice in the dedicated xvar Field 
 * Use the ``chmod +x `` to make the file executable
 * Refresh the plugin from the xbar icon at the top
@@ -54,5 +54,5 @@ Description, sub-modules organization...
 
 1. Python3
 2. Requests lib
-3. Api key from rapidapi.com
+3. pycountry lib
 4. xbar installed
