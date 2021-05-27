@@ -25,39 +25,62 @@ import csv
 
 from requests.api import request
 
-key = os.environ["VAR_APIKEY"]
-country = os.environ["VAR_COUNTRY"]
+def get_cases(country:str, key:str)->str:
+    """
+    Get the cases numbers as json string
+    """
+    url = "https://covid-19-data.p.rapidapi.com/country"
+    querystring = {"name":country}
 
-url = "https://covid-19-data.p.rapidapi.com/country"
-querystring = {"name":country}
+    headers = {
+        'x-rapidapi-key': key,
+        'x-rapidapi-host': "covid-19-data.p.rapidapi.com"
+        }
 
-headers = {
-    'x-rapidapi-key': key,
-    'x-rapidapi-host': "covid-19-data.p.rapidapi.com"
-    }
+    response = requests.get(url, headers=headers, params=querystring).json()
+    response = response[0]
 
-response = requests.get(url, headers=headers, params=querystring).json()
-response = response[0]
+    return response
 
-vaccine_csv = requests.get("https://raw.githubusercontent.com/owid/covid-19-data/master/public/data/vaccinations/country_data/{country}.csv".format(country=country)).content
-if not os.path.isdir(country):
-    os.mkdir(country)
-with open("{country}/data.csv".format(country=country),'wb') as file:
-        file.write(vaccine_csv)
-with open("{country}/data.csv") as data:
-    csv_reader = csv.DictReader(data,delimiter=",")
-    data_string = json.dumps(list(csv_reader))
-    data_jstring = json.loads(data_string)
-data = data_jstring[-1]
+def get_vaccinces(country:str):
+    """
+    Get the vaccines data and returns it
+    """
+    vaccine_csv = requests.get("https://raw.githubusercontent.com/owid/covid-19-data/master/public/data/vaccinations/country_data/{country}.csv".format(country=country)).content
+    if not os.path.isdir(country):
+        os.mkdir(country)
+    with open("{country}/data.csv".format(country=country),'wb') as file:
+            file.write(vaccine_csv)
+    with open("{country}/data.csv".format(country=country)) as data:
+        csv_reader = csv.DictReader(data,delimiter=",")
+        data_string = json.dumps(list(csv_reader))
+        data_jstring = json.loads(data_string)
+    data = data_jstring[-1]
 
-print("🦠")
-print("---")
-print("😷Cases")
-print("--Total cases in {country} : {cases:,} | color=white".format(cases=response["confirmed"], country=country))
-print("--Deaths in {country} : {morts:,} | color=red".format(morts=response["deaths"], country=country))
-print("--Recovered in {country} : {recovered:,} | color=green".format(recovered=response["recovered"], country=country))
-print("---")
-print("💉Vaccines")
-print("--Total vaccinated in {country} : {total_vacc:,} | color=white".format(country=country, total_vacc=int(data["total_vaccinations"])))
-print("--One dose recieved : {partial:,} | color=yellow".format(country=country, partial=int(data["people_vaccinated"])))
-print("--Two dose recieved : {full:,} | color=green".format(country=country, full=int(data["people_fully_vaccinated"])))
+    return data
+
+def display(country:str, cases, vaccines):
+    print("🦠")
+    print("---")
+    print("😷Cases")
+    print("--Total cases in {country} : {cases:,} | color=white".format(cases=cases["confirmed"], country=country))
+    print("--Deaths in {country} : {morts:,} | color=red".format(morts=cases["deaths"], country=country))
+    print("--Recovered in {country} : {recovered:,} | color=green".format(recovered=cases["recovered"], country=country))
+    print("---")
+    print("💉Vaccines")
+    print("--Total vaccinated in {country} : {total_vacc:,} | color=white".format(country=country, total_vacc=int(vaccines["total_vaccinations"])))
+    print("--One dose recieved : {partial:,} | color=yellow".format(country=country, partial=int(vaccines["people_vaccinated"])))
+    print("--Two dose recieved : {full:,} | color=green".format(country=country, full=int(vaccines["people_fully_vaccinated"])))
+
+def main():
+    key = os.environ["VAR_APIKEY"]
+    country = os.environ["VAR_COUNTRY"]
+
+    cases=get_cases(country,key)
+    vaccines=get_vaccinces(country)
+
+    display(country,cases,vaccines)
+
+
+
+
