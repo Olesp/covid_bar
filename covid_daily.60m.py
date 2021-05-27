@@ -37,8 +37,8 @@ response = response[0]
 
 print("🦠")
 print("---")
-print("Total cases in {country} : {cases} | color=white".format(cases=response["confirmed"], country=country))
+print("Total cases in {country} : {cases:,} | color=white".format(cases=response["confirmed"], country=country))
 print("---")
-print("Deaths in {country} : {morts} | color=red".format(morts=response["deaths"], country=country))
+print("Deaths in {country} : {morts:,} | color=red".format(morts=response["deaths"], country=country))
 print("---")
-print("Recovered in {country} : {recovered} | color=green".format(recovered=response["recovered"], country=country))
+print("Recovered in {country} : {recovered:,} | color=green".format(recovered=response["recovered"], country=country))
